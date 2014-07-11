@@ -47,7 +47,7 @@ class account_invoice_line(osv.osv):
         ir_values_obj = self.pool.get('ir.values')
         filter_value = [
             ('key', '=', 'default'),
-            ('model', '=', 'product_product'),
+            ('model', '=', 'product.product'),
             ('name', '=', field_name)]
         ir_values_ids = self.search(cr, uid, filter_value, {})
         if not ir_values_ids:
