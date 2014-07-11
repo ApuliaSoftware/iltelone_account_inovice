@@ -21,6 +21,7 @@
 
 from osv import osv
 from tools.translate import _
+import pickle
 
 
 class account_invoice_line(osv.osv):
@@ -36,21 +37,24 @@ class account_invoice_line(osv.osv):
         if not standard_res:
             return res
         unique_tax_ids = standard_res.get('invoice_line_tax_id', {})
-        if not unique_tax_ids:
-            # -- search the defaul tax in configuration:
-            field_name = 'default_sale_tax'
-            if inv_type in ('in_invoice', 'in_refund'):
-                field_name = 'default_purchase_tax'
-            user = self.pool.get('res.users').browse(cr, uid, uid, {})
-            acc_setting_obj = self.pool.get('account.config.settings')
-            acc_setting_id = acc_setting_obj.search(
-                cr, uid, [('company_id', '=', user.company_id.id)], {})
-            if not acc_setting_id:
-                return res
-            default_tax = acc_setting_obj.read(
-                cr, uid, acc_setting_id, ([field_name]), {})
-            default_tax_id = default_tax[0][field_name]
-            fpos = fposition_id or False
-            unique_tax_ids = self.pool.get('account.fiscal.position').map_tax(
-                cr, uid, fpos, [default_tax_id])
-            return {'value': {'invoice_line_tax_id': unique_tax_ids}}
+        if unique_tax_ids:
+            return res
+        import pdb; pdb.set_trace()
+        # -- search the defaul tax in configuration:
+        field_name = 'taxes_id'
+        if inv_type in ('in_invoice', 'in_refund'):
+            field_name = 'supplier_taxes_id'
+        ir_values_obj = self.pool.get('ir.values')
+        filter_value = [
+            ('key', '=', 'default'),
+            ('model', '=', 'product_product'),
+            ('name', '=', field_name)]
+        ir_values_ids = self.search(cr, uid, filter_value, {})
+        if not ir_values_ids:
+            return res
+        value = ir_values_obj.browse(cr, uid, ir_values_ids[0], {})
+        default_tax_id = pickle.loads(value.value.encode('utf-8'))
+        fpos = fposition_id or False
+        unique_tax_ids = self.pool.get('account.fiscal.position').map_tax(
+            cr, uid, fpos, [default_tax_id])
+        return {'value': {'invoice_line_tax_id': unique_tax_ids}}
