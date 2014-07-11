@@ -49,10 +49,10 @@ class account_invoice_line(osv.osv):
             ('key', '=', 'default'),
             ('model', '=', 'product.product'),
             ('name', '=', field_name)]
-        ir_values_ids = self.search(cr, uid, filter_value, {})
+        ir_values_ids = ir_values_obj.search(cr, uid, filter_value)
         if not ir_values_ids:
             return res
-        value = ir_values_obj.browse(cr, uid, ir_values_ids[0], {})
+        value = ir_values_obj.browse(cr, uid, ir_values_ids[0])
         default_tax_id = pickle.loads(value.value.encode('utf-8'))
         fpos = fposition_id or False
         unique_tax_ids = self.pool.get('account.fiscal.position').map_tax(
