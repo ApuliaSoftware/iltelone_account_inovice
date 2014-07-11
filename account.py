@@ -39,7 +39,6 @@ class account_invoice_line(osv.osv):
         unique_tax_ids = standard_res.get('invoice_line_tax_id', {})
         if unique_tax_ids:
             return res
-        import pdb; pdb.set_trace()
         # -- search the defaul tax in configuration:
         field_name = 'taxes_id'
         if inv_type in ('in_invoice', 'in_refund'):
@@ -56,5 +55,5 @@ class account_invoice_line(osv.osv):
         default_tax_id = pickle.loads(value.value.encode('utf-8'))
         fpos = fposition_id or False
         unique_tax_ids = self.pool.get('account.fiscal.position').map_tax(
-            cr, uid, fpos, [default_tax_id])
+            cr, uid, fpos, default_tax_id)
         return {'value': {'invoice_line_tax_id': unique_tax_ids}}
